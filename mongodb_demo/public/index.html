@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MongoDB Product Catalog Demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">MongoDB Demo</p>
+        <h1>Product Catalog</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="healthStatus" class="status-pill">checking</span>
+        <select id="sampleType" aria-label="Sample product type">
+          <option value="laptop">Laptop sample</option>
+          <option value="t-shirt">T-Shirt sample</option>
+          <option value="book">Book sample</option>
+          <option value="smartphone">Smartphone sample</option>
+          <option value="desk">Desk sample</option>
+        </select>
+        <button id="insertSampleButton" class="primary-button" type="button">Insert Sample</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="filter-panel" aria-label="Filters">
+        <div class="panel-heading">
+          <h2>Filters</h2>
+          <button id="resetFiltersButton" class="ghost-button" type="button">Reset</button>
+        </div>
+        <form id="filterForm" class="filter-grid">
+          <label>
+            Type
+            <select name="productType" id="productTypeFilter">
+              <option value="">All</option>
+            </select>
+          </label>
+          <label>
+            Manufacturer
+            <select name="manufacturer" id="manufacturerFilter">
+              <option value="">All</option>
+            </select>
+          </label>
+          <label>
+            Category
+            <select name="category" id="categoryFilter">
+              <option value="">All</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select name="status" id="statusFilter">
+              <option value="">All</option>
+            </select>
+          </label>
+          <label>
+            Min price
+            <input name="minPrice" type="number" min="0" step="10" placeholder="0" />
+          </label>
+          <label>
+            Max price
+            <input name="maxPrice" type="number" min="0" step="10" placeholder="2500" />
+          </label>
+          <label>
+            RAM from
+            <select name="ramMin" id="ramFilter">
+              <option value="">Any</option>
+            </select>
+          </label>
+          <label>
+            Ship to
+            <select name="shippingRegion" id="regionFilter">
+              <option value="">Any</option>
+            </select>
+          </label>
+          <label>
+            Tag
+            <select name="tag" id="tagFilter">
+              <option value="">Any</option>
+            </select>
+          </label>
+          <label>
+            Schema
+            <select name="schemaEvolution" id="schemaFilter">
+              <option value="">All</option>
+            </select>
+          </label>
+          <label class="wide-field">
+            Search
+            <input name="search" type="search" placeholder="name or highlight" />
+          </label>
+          <button class="visually-hidden" type="submit" tabindex="-1">Apply</button>
+        </form>
+        <p id="statusMessage" class="status-message" role="status"></p>
+      </aside>
+
+      <section class="product-panel" aria-label="Products">
+        <div class="panel-heading">
+          <h2>Products</h2>
+          <span id="resultCount" class="muted">0 results</span>
+        </div>
+        <div id="productList" class="product-list"></div>
+      </section>
+
+      <section class="detail-panel" aria-label="Product detail">
+        <div class="panel-heading">
+          <h2 id="detailTitle">Document</h2>
+          <div class="tabs" role="tablist" aria-label="Detail views">
+            <button class="tab-button active" data-tab="document" type="button">Document</button>
+            <button class="tab-button" data-tab="query" type="button">Query</button>
+            <button class="tab-button" data-tab="code" type="button">PyMongo</button>
+          </div>
+        </div>
+        <div id="schemaHint" class="schema-hint"></div>
+        <pre id="detailContent" class="code-block">Select a product to inspect its document.</pre>
+      </section>
+
+      <section class="aggregation-panel" aria-label="Aggregation">
+        <div class="panel-heading">
+          <h2>Aggregation</h2>
+          <select id="aggregationSelect" aria-label="Aggregation kind"></select>
+        </div>
+        <div class="aggregation-layout">
+          <div class="table-wrap">
+            <table>
+              <thead id="aggregationHead"></thead>
+              <tbody id="aggregationBody"></tbody>
+            </table>
+          </div>
+          <pre id="aggregationQuery" class="code-block small"></pre>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

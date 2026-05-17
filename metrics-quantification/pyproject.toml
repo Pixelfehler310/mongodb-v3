@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metrics-quantification"
+version = "0.1.0"
+description = "Quantitative MongoDB vs PostgreSQL benchmark project for a product-catalog seminar domain."
+requires-python = ">=3.11"
+dependencies = [
+	"faker==24.14.1",
+	"numpy==1.26.4",
+	"psycopg2-binary==2.9.9",
+	"pymongo==4.7.3",
+	"python-dotenv==1.0.1",
+	"rich==13.7.1"
+]
+
+[tool.setuptools.packages.find]
+include = ["benchmark*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

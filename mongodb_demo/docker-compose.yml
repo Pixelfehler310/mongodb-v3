@@ -1,0 +1,48 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mongodb-demo
+    restart: unless-stopped
+    ports:
+      - "27117:27017"
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mongodb_demo_data:/data/db
+
+  seed:
+    build: .
+    container_name: mongodb-demo-seed
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/
+      MONGO_DB: product_demo
+      MONGO_COLLECTION: products
+    command: ["python", "scripts/seed.py"]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  app:
+    build: .
+    container_name: mongodb-demo-app
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      MONGO_URI: mongodb://mongodb:27017/
+      MONGO_DB: product_demo
+      MONGO_COLLECTION: products
+      DEFAULT_LIMIT: 25
+      DEMO_SEED_PROFILE: standard
+      ENABLE_EVOLUTION_VIEW: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+volumes:
+  mongodb_demo_data:

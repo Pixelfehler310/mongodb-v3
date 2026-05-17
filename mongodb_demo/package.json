@@ -1,0 +1,14 @@
+{
+    "name": "mongodb-demo",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Presentation-friendly MongoDB product catalog demo.",
+    "scripts": {
+        "compose:up": "docker compose up --build",
+        "compose:down": "docker compose down",
+        "seed": "python scripts/seed.py",
+        "reset": "python scripts/reset_demo.py",
+        "start": "python -m backend.app",
+        "test": "python -m pytest"
+    }
+}

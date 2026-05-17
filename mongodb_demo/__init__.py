@@ -1,0 +1,1 @@
+"""MongoDB product catalog demo project."""

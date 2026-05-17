@@ -1,0 +1,5 @@
+[MASTER]
+init-hook='import os, sys; cwd = os.getcwd(); demo = os.path.join(cwd, "mongodb_demo"); sys.path.insert(0, demo if os.path.isdir(demo) else cwd)'
+
+[MESSAGES CONTROL]
+disable=import-error

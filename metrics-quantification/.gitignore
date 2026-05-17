@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+exports/raw/*
+exports/processed/*
+exports/charts/*
+state/run-history/*
+state/manifests/*
+!exports/raw/.gitkeep
+!exports/processed/.gitkeep
+!exports/charts/.gitkeep
+!state/run-history/.gitkeep
+!state/manifests/.gitkeep

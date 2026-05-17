@@ -1,0 +1,23 @@
+{
+  "name": "metrics-quantification",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quantitative MongoDB vs PostgreSQL benchmark project for the product-catalog seminar domain.",
+  "scripts": {
+    "setup": "python -m pip install -r requirements-dev.txt -e .",
+    "test": "python -m pytest",
+    "smoke": "python -m benchmark.runner --dry-run --scenario all --db all --dataset tiny --repetitions 1 --operations 5 --warmup --export",
+    "validate": "python -m benchmark.runner --scenario all --db all --dataset small --validate-only",
+    "seed": "python -m benchmark.runner --scenario all --db all --dataset small --seed-only",
+    "benchmark": "python -m benchmark.runner --scenario all --db all --dataset small --repetitions 5 --operations 100 --warmup --export",
+    "benchmark:read": "python -m benchmark.runner --scenario read-locality --db all --dataset small --repetitions 5 --operations 100 --warmup --export",
+    "benchmark:update": "python -m benchmark.runner --scenario denormalized-update --db all --dataset small --repetitions 5 --operations 10 --warmup --export",
+    "benchmark:join": "python -m benchmark.runner --scenario join-lookup --db all --dataset small --repetitions 5 --operations 25 --warmup --export",
+    "docker:up": "docker compose up -d postgres mongo",
+    "docker:down": "docker compose down -v",
+    "docker:build": "docker compose build metrics",
+    "docker:test": "docker compose run --rm metrics python -m pytest",
+    "docker:benchmark": "docker compose run --rm metrics python -m benchmark.runner --scenario all --db all --dataset small --repetitions 5 --operations 100 --warmup --export"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

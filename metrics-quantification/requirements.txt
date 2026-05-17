@@ -1,0 +1,6 @@
+faker==24.14.1
+numpy==1.26.4
+psycopg2-binary==2.9.9
+pymongo==4.7.3
+python-dotenv==1.0.1
+rich==13.7.1
