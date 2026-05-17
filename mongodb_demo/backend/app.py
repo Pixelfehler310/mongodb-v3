@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request
 from pymongo.errors import PyMongoError
 from werkzeug.exceptions import HTTPException
 
@@ -24,18 +22,15 @@ from .serialization import serialize
 from .settings import Settings
 
 
-PUBLIC_DIR = Path(__file__).resolve().parent.parent / "public"
-
-
 def create_app(settings: Settings | None = None) -> Flask:
     settings = settings or Settings.from_env()
-    app = Flask(__name__, static_folder=str(PUBLIC_DIR), static_url_path="")
+    app = Flask(__name__, static_folder=None)
     database = MongoDatabase(settings)
     repository = ProductRepository(database.collection)
 
     @app.get("/")
     def index():
-        return send_from_directory(PUBLIC_DIR, "index.html")
+        return jsonify({"name": "MongoDB Product Catalog Demo API", "ok": True})
 
     @app.get("/api/health")
     def health():
@@ -132,4 +127,4 @@ def create_app(settings: Settings | None = None) -> Flask:
 
 if __name__ == "__main__":
     app_settings = Settings.from_env()
-    create_app(app_settings).run(host="0.0.0.0", port=app_settings.port, debug=True)
+    create_app(app_settings).run(host="0.0.0.0", port=app_settings.port, debug=False)

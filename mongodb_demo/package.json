@@ -6,6 +6,8 @@
     "scripts": {
         "compose:up": "docker compose up --build",
         "compose:down": "docker compose down",
+        "frontend:dev": "npm --prefix frontend run dev",
+        "frontend:build": "npm --prefix frontend run build",
         "seed": "python scripts/seed.py",
         "reset": "python scripts/reset_demo.py",
         "start": "python -m backend.app",

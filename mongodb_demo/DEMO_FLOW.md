@@ -21,7 +21,7 @@ docker compose up --build
 
 ## Quick Smoke Test
 
-1. `GET /api/health` returns `ok: true`.
+1. `GET http://localhost:5000/api/health` returns `ok: true`.
 2. Product list loads with at least five product types.
 3. Selecting a product loads the detail JSON.
 4. Aggregation table contains rows.

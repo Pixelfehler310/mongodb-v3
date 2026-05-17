@@ -15,6 +15,7 @@ This project is a presentation artifact. It explains MongoDB document modeling w
 - Aggregation view.
 - Prepared live sample insert.
 - Deterministic seed data.
+- React/Vite frontend for the presentation UI.
 
 ## Out of Scope
 
@@ -23,7 +24,7 @@ This project is a presentation artifact. It explains MongoDB document modeling w
 - Authentication.
 - CRUD administration.
 - Production hardening.
-- React, Vite, or a larger frontend architecture.
+- A larger frontend architecture beyond the demo UI.
 
 ## Architecture
 
@@ -31,4 +32,4 @@ This project is a presentation artifact. It explains MongoDB document modeling w
 Browser UI -> Flask API -> PyMongo Repository -> MongoDB
 ```
 
-The default local runtime is Docker Compose: MongoDB is exposed on host port `27117`, while the Flask app container serves both the API and the static frontend on host port `3000`.
+The default local runtime is Docker Compose: MongoDB is exposed on host port `27117`, the Flask API is exposed on host port `5000`, and the React frontend is exposed on host port `3000`.

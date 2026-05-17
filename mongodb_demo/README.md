@@ -13,15 +13,16 @@ docker compose up --build
 
 Open `http://localhost:3000`.
 
-This starts three containers:
+This starts four containers:
 
 - `mongodb-demo` for MongoDB, exposed on host port `27117`.
 - `mongodb-demo-seed` for deterministic seed data.
-- `mongodb-demo-app` for the Flask backend and static frontend, exposed on host port `3000`.
+- `mongodb-demo-backend` for the Flask API, exposed on host port `5000`.
+- `mongodb-demo-frontend` for the React frontend, exposed on host port `3000`.
 
-## Local Python Start
+## Local Development Start
 
-Use this path only when you want to run Flask directly on the host:
+Use this path when you want the Flask API and React app running directly on the host:
 
 ```powershell
 cd mongodb_demo
@@ -34,7 +35,15 @@ python scripts/seed.py
 python -m backend.app
 ```
 
-The host-side MongoDB URI is `mongodb://localhost:27117/`.
+In a second terminal:
+
+```powershell
+cd mongodb_demo
+npm --prefix frontend install
+npm --prefix frontend run dev
+```
+
+The host-side MongoDB URI is `mongodb://localhost:27117/`, the Flask API runs on `http://localhost:5000`, and the React app runs on `http://localhost:3000`.
 
 ## What It Shows
 
@@ -54,6 +63,8 @@ docker compose down
 docker compose up -d mongodb
 python scripts/seed.py
 python -m backend.app
+npm --prefix frontend run dev
+npm --prefix frontend run build
 python -m pytest
 ```
 
