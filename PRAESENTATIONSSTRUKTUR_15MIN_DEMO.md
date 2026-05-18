@@ -2,13 +2,13 @@
 
 ## Ziel dieser Struktur
 
-Diese Struktur ist fuer eine kurze Seminarpraesentation gedacht, in der nur das Demo-Projekt im Mittelpunkt steht. Die Praesentation soll fair bleiben, beide Systeme kritisch betrachten und keine kuenstliche Siegergeschichte bauen.
+Diese Struktur ist auf den aktuellen Stand des Demo-Projekts abgestimmt. Im Mittelpunkt steht jetzt eine gefuehrte Dual-Backend-Demo mit demselben Produktkatalog, derselben UI und demselben API-Contract fuer MongoDB und PostgreSQL.
 
 Die Leitidee lautet:
 
-> MongoDB und PostgreSQL werden am selben Produktkatalog mit demselben Frontend-Contract gezeigt, damit sichtbar wird, wann Dokumentmodellierung staerker wirkt und wann das relationale Modell Vorteile hat.
+> MongoDB und PostgreSQL werden am selben Produktkatalog mit derselben Anwendung gezeigt, damit sichtbar wird, wie sich Dokumentmodellierung und relationale Modellierung bei Lesezugriff, Schema-Evolution, zentralen Updates und Analytics unterscheiden.
 
-Die Praesentation soll nicht versuchen, in 15 Minuten alle wissenschaftlichen Beweise zu liefern. Sie soll eine klare, faire und methodisch saubere Architekturgeschichte erzaehlen.
+Die Praesentation soll bewusst keine CAP-, Replica-Set- oder Benchmark-Beweisfuehrung liefern. Sie soll eine faire, klare und fachlich nachvollziehbare Architekturgeschichte erzaehlen.
 
 ---
 
@@ -16,42 +16,42 @@ Die Praesentation soll nicht versuchen, in 15 Minuten alle wissenschaftlichen Be
 
 - Dauer: 15 Minuten
 - Artefakt im Mittelpunkt: `mongodb_demo/`
-- Stil: kurze Folien, klare Uebergaenge, 1 kontrollierte Live-Demo
-- Hauptziel: Unterschiede in Modellierung, Dokumentstruktur, Schema-Evolution und Trade-offs erklaeren
-- Nicht Ziel der Praesentation: vollstaendige Benchmark-Beweisfuehrung
+- Stil: wenige Folien, klare Uebergaenge, eine gefuehrte Live-Demo
+- Hauptziel: Modellierungs-Trade-offs an einem kleinen, kuratierten Produktkatalog erklaeren
+- Nicht Ziel der Praesentation: quantitative Endgueltigkeit, CAP-Nachweis, Failover-Beweis oder Sharding-Demo
 
 Empfohlene Verteilung:
 
-1. Slide 1 bis 3: Problem, Ziel, Fairness des Vergleichs
-2. Slide 4 bis 6: Live-Demo und direkte Auswertung
-3. Slide 7 bis 8: kritische Einordnung und Fazit
+1. Slide 1 bis 3: Problem, Domaene, Fairness des Vergleichs
+2. Slide 4 bis 6: gefuehrte Live-Demo entlang der Story-Schritte
+3. Slide 7 bis 8: Einordnung, Grenzen, Fazit
 
 ---
 
-## Slide 1 - Titel und Forschungsfrage
+## Slide 1 - Titel und Leitfrage
 
 ### Ziel der Folie
 
-Das Publikum soll in den ersten 30 bis 60 Sekunden verstehen, worum es fachlich geht und dass der Vortrag kein Werbevortrag fuer MongoDB ist.
+Das Publikum soll sofort verstehen, dass es nicht um eine Siegerdatenbank geht, sondern um einen kontrollierten Architekturvergleich.
 
 ### Folientitel
 
-`MongoDB vs. PostgreSQL im Produktkatalog: Dokumentmodell, relationale Struktur und praktische Trade-offs`
+`MongoDB vs. PostgreSQL im Produktkatalog: Modellierung, Evolution und Trade-offs`
 
 ### Inhalt auf der Folie
 
-- Vergleich eines dokumentenorientierten und eines relationalen Modells
-- Gleiche Domaene: polymorpher Produktkatalog
-- Gleiche Anwendung, gleicher Frontend-Contract
-- Leitfrage: Wann ist welches Modell fuer diese Domaene staerker?
+- gleicher Produktkatalog
+- gleiche UI und gleicher API-Contract
+- zwei unterschiedliche Persistenzmodelle
+- Leitfrage: Welche Modellierungsfolgen werden im selben Anwendungsszenario sichtbar?
 
 ### Gesprochener Text
 
-In diesem Vortrag vergleiche ich MongoDB und PostgreSQL nicht als allgemeine Siegerdatenbanken, sondern anhand eines konkreten fachlichen Beispiels: eines polymorphen Produktkatalogs. Beide Systeme bedienen dieselbe Anwendung und denselben Frontend-Contract. Die eigentliche Frage ist deshalb nicht, welche Datenbank pauschal besser ist, sondern wann ein Dokumentmodell Vorteile bietet und wann ein relationales Modell staerker wirkt.
+Ich vergleiche MongoDB und PostgreSQL hier nicht als allgemeine Siegerdatenbanken. Stattdessen zeige ich denselben Produktkatalog, dieselbe Anwendung und denselben API-Contract mit zwei unterschiedlichen Persistenzmodellen. Die Leitfrage ist also nicht, welche Datenbank pauschal besser ist, sondern welche Modellierungsfolgen in genau diesem Szenario sichtbar werden.
 
 ### Kernaussage
 
-Der Vortrag untersucht einen fairen, fachlich motivierten Architekturvergleich statt einer pauschalen Technologiebehauptung.
+Der Vortrag ist ein fairer Architekturvergleich und kein Werbevortrag fuer eine Datenbank.
 
 ### Zeitbudget
 
@@ -59,31 +59,31 @@ Der Vortrag untersucht einen fairen, fachlich motivierten Architekturvergleich s
 
 ---
 
-## Slide 2 - Warum gerade diese Domaene?
+## Slide 2 - Warum diese Domaene?
 
 ### Ziel der Folie
 
-Begruenden, warum der Produktkatalog ein besseres Vergleichsbeispiel ist als eine rein technische Lastsimulation.
+Begruenden, warum der aktuelle kleine Produktkatalog ein gutes Vergleichsbeispiel ist.
 
 ### Folientitel
 
-`Warum ein polymorpher Produktkatalog?`
+`Warum ein kuratierter Produktkatalog?`
 
 ### Inhalt auf der Folie
 
-- mehrere Produkttypen in einem gemeinsamen fachlichen Modell
+- drei Produkttypen: Laptop, T-Shirt, Buch
 - gemeinsame Felder plus typspezifische Attribute
-- eingebettete Listen und Teilaggregate
-- reale Schema-Evolution
-- gute Sichtbarkeit von Dokumentlokalitaet und Hydration
+- eingebettete Teilaggregate wie Kategorien, Varianten und Reviews
+- alte und neue Datensaetze fuer Schema-Evolution
+- gut erklaerbare Update- und Analytics-Faelle
 
 ### Gesprochener Text
 
-Ich habe bewusst keine rein technische Event-Domaene gewaehlt, sondern einen Produktkatalog. Der Grund ist, dass hier die Unterschiede schon im Datenmodell selbst sichtbar werden. Wir haben gemeinsame Felder, typspezifische Attribute, eingebettete Bereiche wie Varianten oder Reviews und ausserdem echte Schema-Evolution. Genau dadurch werden die typischen Spannungen zwischen Dokumentmodell und relationalem Modell sichtbar, ohne dass ich sofort mit Cluster- oder Infrastrukturthemen argumentieren muss.
+Die Domaene ist absichtlich klein, aber fachlich ergiebig. Mit Laptops, T-Shirts und Buechern habe ich unterschiedliche Produkttypen in einem gemeinsamen Modell. Gleichzeitig enthaelt jedes Produkt Teilaggregate wie Kategorien, Varianten und Reviews. Dazu kommen alte und neue Datensaetze, damit Schema-Evolution sichtbar wird. So kann ich Modellierungsunterschiede zeigen, ohne mich in zu vielen Nebenthemen zu verlieren.
 
 ### Kernaussage
 
-Die Domaene ist so gewaehlt, dass die Modellierungsunterschiede fachlich natuerlich sichtbar werden.
+Die Domaene ist klein genug fuer 15 Minuten, aber reich genug fuer einen fairen Modellvergleich.
 
 ### Zeitbudget
 
@@ -91,11 +91,11 @@ Die Domaene ist so gewaehlt, dass die Modellierungsunterschiede fachlich natuerl
 
 ---
 
-## Slide 3 - Fairness des Vergleichs
+## Slide 3 - Wie der Vergleich fair bleibt
 
 ### Ziel der Folie
 
-Dem Publikum frueh zeigen, dass die beiden Systeme nicht ueber unterschiedliche Anwendungen verglichen werden.
+Klar machen, dass nicht zwei verschiedene Apps, sondern zwei Datenmodellierungsansaetze verglichen werden.
 
 ### Folientitel
 
@@ -103,25 +103,25 @@ Dem Publikum frueh zeigen, dass die beiden Systeme nicht ueber unterschiedliche 
 
 ### Inhalt auf der Folie
 
-- dieselbe UI
-- derselbe API-Contract
-- dieselbe Produktkatalog-Domaene
+- dieselbe React-UI
+- dieselben Produktansichten und Szenarien
+- derselbe HTTP-Contract
 - deterministische Seed-Daten
-- unterschiedliche interne Modellierung, aber gleiche fachliche Ausgabe
+- unterschiedliche interne Speicherung, gleiche fachliche Ausgabe
 
 ### Zusatzgrafik auf der Folie
 
 ```text
-Browser UI -> gleicher Frontend-Contract -> MongoDB Backend / PostgreSQL Backend
+Browser UI -> gleicher API-Contract -> MongoDB Backend / PostgreSQL Backend
 ```
 
 ### Gesprochener Text
 
-Der Vergleich ist nur dann sinnvoll, wenn nicht zwei verschiedene Anwendungen gegeneinander antreten. Deshalb verwende ich dieselbe UI und denselben API-Contract fuer beide Backends. Beide Systeme liefern also dieselbe fachliche Sicht auf einen Produktkatalog. Der Unterschied liegt nicht in der Oberflaeche, sondern in der internen Speicherung und Rekonstruktion der Daten.
+Der Vergleich ist nur sinnvoll, wenn nicht zwei verschiedene Anwendungen gegeneinander antreten. Deshalb laufen beide Backends hinter derselben UI und demselben API-Contract. Beide liefern also dieselbe fachliche Produktsicht. Der Unterschied liegt nicht in der Oberflaeche, sondern in der internen Modellierung und in den daraus entstehenden Konsequenzen.
 
 ### Kernaussage
 
-Verglichen werden nicht zwei Apps, sondern zwei Datenmodellierungsansaetze hinter demselben fachlichen Vertrag.
+Verglichen werden Modellierungsansaetze hinter demselben fachlichen Vertrag.
 
 ### Zeitbudget
 
@@ -129,39 +129,39 @@ Verglichen werden nicht zwei Apps, sondern zwei Datenmodellierungsansaetze hinte
 
 ---
 
-## Slide 4 - Live-Demo: MongoDB zeigt seine Staerken
+## Slide 4 - Live-Demo Teil 1: Gleiches Ergebnis, andere Storage Shape
 
 ### Ziel der Folie
 
-Die Live-Demo nicht als Herumklicken, sondern als gezielte Illustration von drei MongoDB-Staerken fuehren.
+Die Demo mit einem klaren Symmetriepunkt starten: gleiche sichtbare Anwendung, aber andere interne Form.
 
 ### Folientitel
 
-`Live-Demo Teil 1: Warum das MongoDB-Modell hier natuerlich wirkt`
+`Live-Demo Teil 1: Gleiches Produkt, andere interne Form`
 
 ### Was auf der Folie stehen soll
 
-- ein Produkt ist als Dokument direkt lesbar
-- eingebettete Daten liegen schon zusammen vor
-- polymorphe Felder passen natuerlich in ein gemeinsames Modell
-- Filter werden sichtbar zu Query und PyMongo-Code
+- zuerst gleiche fachliche Produktsicht zeigen
+- danach `Storage Shape` vergleichen
+- MongoDB: eingebettetes Aggregat
+- PostgreSQL: normalisierte Tabellen und Hydration
 
 ### Live-Demo-Aktion
 
-1. Anwendung starten oder offen haben.
-2. MongoDB als Backend auswaehlen.
-3. Einen Laptop auswaehlen.
-4. Dokumentansicht zeigen.
-5. Danach Query-Tab und Code-Tab oeffnen.
-6. Einen oder zwei Filter setzen, zum Beispiel `productType = laptop` und `schemaEvolution = withTaxCode`.
+1. Anwendung offen haben.
+2. MongoDB auswaehlen.
+3. Ein Produkt oeffnen, idealerweise einen Laptop.
+4. Zwischen `document`, `query` und `code` wechseln.
+5. Auf PostgreSQL umschalten.
+6. Dasselbe Produkt erneut betrachten und `Storage Shape` zeigen.
 
 ### Gesprochener Text
 
-Hier sieht man die eigentliche Staerke des Dokumentmodells. Das Produkt liegt als fachlich lesbares Dokument vor. Gemeinsame Felder, typspezifische Attribute, Varianten, Reviews und weitere verschachtelte Bereiche koennen in einer Form gespeichert werden, die der spaeteren API-Antwort schon sehr nahe kommt. Wenn ich Filter setze, kann ich direkt zeigen, wie sich dieselbe UI-Aktion in eine MongoDB-Query und in passenden PyMongo-Code uebersetzt. Fuer ein Publikum ist das sehr anschaulich, weil das Datenmodell und der Zugriffspfad fast dieselbe Form haben.
+Ich starte bewusst mit einem symmetrischen Blick: Die sichtbare Anwendung bleibt gleich, aber intern aendert sich die Form des Produkts. In MongoDB liegt das Produkt als eingebettetes Dokument sehr nah an der API-Antwort. In PostgreSQL wird dieselbe fachliche Sicht aus mehreren Tabellen zusammengesetzt. Genau an diesem Punkt sieht man bereits den Kern des Vergleichs: gleiche fachliche Wirkung, andere strukturelle Kosten und Vorteile.
 
 ### Kernaussage
 
-MongoDB wirkt in diesem Szenario stark, wenn ein fachliches Aggregat als zusammenhaengendes Dokument gelesen und erklaert werden soll.
+MongoDB und PostgreSQL koennen dasselbe Produkt liefern, aber nicht ueber dieselbe innere Modelllogik.
 
 ### Zeitbudget
 
@@ -169,72 +169,78 @@ MongoDB wirkt in diesem Szenario stark, wenn ein fachliches Aggregat als zusamme
 
 ---
 
-## Slide 5 - Live-Demo: PostgreSQL zeigt seine Staerken
+## Slide 5 - Live-Demo Teil 2: Schema-Evolution und zentrale Updates
 
 ### Ziel der Folie
 
-Direkt danach zeigen, dass PostgreSQL nicht die schlechtere Variante ist, sondern andere Staerken besitzt.
+Die zwei wichtigsten aktiven Demo-Szenarien zeigen: `lazy migration` und `category rename`.
 
 ### Folientitel
 
-`Live-Demo Teil 2: Warum das relationale Modell hier ebenfalls stark ist`
+`Live-Demo Teil 2: Evolution und Aenderungskosten`
 
 ### Was auf der Folie stehen soll
 
-- gleiche fachliche Ausgabe trotz anderer interner Struktur
-- explizite Tabellenstruktur und klare Trennung von Verantwortlichkeiten
-- Kontrolle durch Normalisierung
-- SQL und psycopg bleiben fuer strukturierte Abfragen sehr klar
+- `regionalTaxCode` als spaeter eingefuehrtes Feld
+- MongoDB: alte und neue Dokumente koennen parallel existieren
+- PostgreSQL: explizite, kontrollierte Aenderung in Tabellenstruktur und Zeilen
+- Kategorie-Umbenennung als Kontrast zwischen Denormalisierung und zentraler Pflege
 
 ### Live-Demo-Aktion
 
-1. Auf PostgreSQL umschalten.
-2. Dasselbe oder ein vergleichbares Produkt oeffnen.
-3. `Storage Shape` zeigen.
-4. Query-Tab und Code-Tab zeigen.
-5. Kurz die gleiche Filterkombination wiederholen.
+1. Im Story-Schritt `Schema` bleiben.
+2. Ein Produkt mit alter Struktur zeigen oder nach `withoutTaxCode` filtern.
+3. `lazy migration` auf MongoDB ausfuehren.
+4. Auf PostgreSQL wechseln und dasselbe Szenario wiederholen.
+5. Danach `category rename` fuer beide Backends ausfuehren.
 
 ### Gesprochener Text
 
-Beim Wechsel auf PostgreSQL bleibt die fachliche Ausgabe fuer die Anwendung stabil, aber intern passiert etwas anderes. Das Produkt wird nicht als einzelnes Dokument gelesen, sondern aus mehreren relationalen Teilen zusammengesetzt. Genau darin liegt aber auch eine Staerke: Die Struktur ist explizit, die Beziehungen sind kontrolliert und die Daten sind klar getrennt. Das ist oft weniger bequem fuer ein aggregiertes API-Objekt, kann aber bei Datenkontrolle, zentralen Updates und klarer Struktur sehr vorteilhaft sein.
+Hier sieht man die Unterschiede nicht nur im Lesen, sondern im Veraendern des Modells. Beim Feld `regionalTaxCode` kann MongoDB alte und neue Dokumente vergleichsweise natuerlich nebeneinander tolerieren und nur die betroffenen Dokumente spaeter migrieren. PostgreSQL macht dieselbe Aenderung expliziter und kontrollierter. Beim Umbenennen einer Kategorie zeigt sich dann die Gegenrichtung: In MongoDB koennen eingebettete Kategorieschnappschuesse in vielen Produktdokumenten angepasst werden muessen, waehrend PostgreSQL eine zentrale Kategorienzeile aktualisiert.
 
 ### Kernaussage
 
-PostgreSQL ist hier nicht schwach, sondern staerker in expliziter Struktur, Kontrolle und zentraler Datenhaltung.
+Flexibilitaet und zentrale Pflege sind gegenlaeufige Staerken, keine allgemeine Siegerlogik.
 
 ### Zeitbudget
 
-2.5 Minuten
+3 Minuten
 
 ---
 
-## Slide 6 - Direkter Vergleich der wichtigsten Trade-offs
+## Slide 6 - Live-Demo Teil 3: Analytics und direkte Einordnung
 
 ### Ziel der Folie
 
-Das Publikum soll die Unterschiede nach der Live-Demo strukturiert einordnen koennen.
+Die Demo mit einem kleinen Analytics-Beispiel abrunden und die Trade-offs verdichten.
 
 ### Folientitel
 
-`Was man nach der Demo direkt vergleichen kann`
+`Live-Demo Teil 3: Analytics und Verdichtung der Unterschiede`
 
 ### Inhalt auf der Folie
 
-| Aspekt                        | MongoDB                      | PostgreSQL                              |
-| ----------------------------- | ---------------------------- | --------------------------------------- |
-| Produktdetail lesen           | sehr natuerlich als Dokument | muss aus Relationen hydratisiert werden |
-| Polymorphe Produkttypen       | flexibel in einer Collection | expliziter modelliert                   |
-| Strukturkontrolle             | flexibler                    | strenger und expliziter                 |
-| Globale Datenaenderungen      | bei Denormalisierung teurer  | zentral oft einfacher                   |
-| Erklaerbarkeit fuer Aggregate | sehr anschaulich             | technisch praezise, aber indirekter     |
+| Aspekt | MongoDB | PostgreSQL |
+| --- | --- | --- |
+| Produkt lesen | nahe am Dokument | aus Relationen hydratisiert |
+| Schema-Evolution | flexibel und schrittweise | explizit und kontrolliert |
+| Kategorie-Update | bei Einbettung breiter verteilt | zentral oft einfacher |
+| Analytics | Aggregation ueber Dokumente | Aggregation ueber SQL-Joins |
+
+### Live-Demo-Aktion
+
+1. `Analytics` oeffnen.
+2. `avgPriceByType` oder `avgRatingByManufacturer` fuer MongoDB zeigen.
+3. Direkt auf PostgreSQL umschalten und denselben Fall zeigen.
+4. Query- und Code-Ansicht kurz einblenden.
 
 ### Gesprochener Text
 
-Nach der Demo lassen sich die Unterschiede relativ klar verdichten. MongoDB wirkt stark, wenn ein Produkt als zusammenhaengendes fachliches Aggregat gedacht wird. PostgreSQL wirkt stark, wenn Struktur, zentrale Pflege und explizite Beziehungen im Vordergrund stehen. Entscheidend ist, dass sich die Systeme hier nicht nur in Syntax unterscheiden, sondern in der Art, wie sie die gleiche fachliche Welt modellieren.
+Das Analytics-Beispiel rundet die Demo ab, weil es zeigt, dass beide Systeme dieselbe Frage beantworten koennen, aber mit anderer innerer Logik. MongoDB aggregiert ueber Dokumente und eingebettete Strukturen, PostgreSQL ueber explizite relationale Pfade. Spaetestens hier laesst sich die gesamte Demo verdichten: Die Unterschiede liegen nicht nur in Syntax, sondern im Modellierungsparadigma.
 
 ### Kernaussage
 
-Die Unterschiede liegen im Modellierungsparadigma und nicht nur in der Abfragesprache.
+Die spannendste Differenz liegt in der inneren Modelllogik, nicht nur in der Abfragesprache.
 
 ### Zeitbudget
 
@@ -242,39 +248,35 @@ Die Unterschiede liegen im Modellierungsparadigma und nicht nur in der Abfragesp
 
 ---
 
-## Slide 7 - Schema-Evolution und Developer Experience
+## Slide 7 - Grenzen der Demo
 
 ### Ziel der Folie
 
-Den fuer MongoDB oft zentralen Punkt der Flexibilitaet zeigen, ohne daraus eine unkritische Werbebotschaft zu machen.
+Methodische Ehrlichkeit zeigen und bewusst benennen, was diese Live-Demo nicht leisten soll.
 
 ### Folientitel
 
-`Schema-Evolution: Flexibilitaet gegen Explizitheit`
+`Was diese Demo bewusst nicht behauptet`
 
 ### Inhalt auf der Folie
 
-- Beispiel: `regionalTaxCode` als spaeter eingefuehrtes Feld
-- MongoDB: alte und neue Dokumente koennen nebeneinander existieren
-- PostgreSQL: neue Struktur ist explizit und kontrolliert
-- Interpretationspunkt: Flexibilitaet ist ein Vorteil, aber auch ein Steuerungsproblem
-
-### Optionaler Unterpunkt auf der Folie
-
-- MongoDB ermoeglicht Lazy Migration
-- PostgreSQL erzwingt haeufig frueher explizite Anpassungen
+- kein allgemeiner Performance-Beweis
+- kein CAP-Nachweis
+- keine Replica-Set- oder Failover-Demonstration
+- keine Sharding-Aussage
+- nur qualitative Architekturbeobachtung im selben Anwendungsszenario
 
 ### Gesprochener Text
 
-Ein besonders wichtiger Unterschied ist die Schema-Evolution. Im Demo ist das am Feld `regionalTaxCode` sichtbar. In MongoDB koennen alte und neue Dokumentversionen vergleichsweise natuerlich nebeneinander existieren. Das ist praktisch, wenn sich Anforderungen schrittweise entwickeln. PostgreSQL ist hier meist expliziter: Aenderungen muessen klarer eingezogen und kontrolliert werden. Das ist weniger flexibel, aber dafuer oft besser steuerbar. Genau deshalb sollte man Flexibilitaet nicht automatisch mit Ueberlegenheit verwechseln.
+Wichtig ist, was ich hier nicht behaupte. Diese Demo beweist keine allgemeine Ueberlegenheit, keine globale Performance-Aussage und auch kein CAP- oder Ausfallverhalten. Sie zeigt qualitativ, wie sich zwei unterschiedliche Persistenzmodelle im selben Anwendungsszenario anfuehlen und welche Architekturfolgen sichtbar werden.
 
 ### Kernaussage
 
-MongoDB erleichtert evolutionaere Aenderungen, PostgreSQL bietet dafuer haeufig staerkere strukturelle Kontrolle.
+Die Live-Demo ist ein qualitativer Architekturvergleich, keine vollstaendige wissenschaftliche Endvalidierung.
 
 ### Zeitbudget
 
-1.5 Minuten
+1 Minute
 
 ---
 
@@ -282,7 +284,7 @@ MongoDB erleichtert evolutionaere Aenderungen, PostgreSQL bietet dafuer haeufig 
 
 ### Ziel der Folie
 
-Die Praesentation sauber abschliessen, ohne zu uebertreiben, und Raum fuer die spaetere Seminararbeit offenlassen.
+Den Vortrag sauber abschliessen, ohne zu uebertreiben, und den Problem-Fit betonen.
 
 ### Folientitel
 
@@ -292,23 +294,21 @@ Die Praesentation sauber abschliessen, ohne zu uebertreiben, und Raum fuer die s
 
 - MongoDB ist stark bei:
   - dokumentnahen Aggregaten
-  - Polymorphie
-  - anschaulicher Dokumentstruktur
-  - flexibler Schema-Evolution
+  - polymorpher Modellierung
+  - schrittweiser Evolution
 - PostgreSQL ist stark bei:
   - expliziter Struktur
   - zentralen Updates
-  - kontrollierter Datenhaltung
-  - klaren relationalen Zugriffspfaden
-- Ausblick: Die quantitative Validierung folgt im schriftlichen Teil
+  - kontrollierter relationaler Logik
+- Schlussgedanke: Die Wahl haengt von Workload, Aenderungsmustern und Kontrollbedarf ab.
 
 ### Gesprochener Text
 
-Mein Fazit ist deshalb bewusst nicht, dass eines der beiden Systeme generell besser ist. MongoDB wirkt in diesem Produktkatalog stark, wenn fachliche Aggregate, Dokumentnaehe und flexible Evolution wichtig sind. PostgreSQL wirkt stark, wenn Strukturkontrolle, zentrale Pflege und explizite Relationen im Vordergrund stehen. Fuer die Praesentation reicht diese qualitative Gegenueberstellung. Die quantitativ belastbare Validierung von Performance- oder Ausfallhypothesen gehoert anschliessend in das wissenschaftliche Testprojekt und in die schriftliche Seminararbeit.
+Mein Fazit ist bewusst kein Siegerfazit. MongoDB wirkt in diesem Produktkatalog stark, wenn fachliche Aggregate, Polymorphie und schrittweise Evolution wichtig sind. PostgreSQL wirkt stark, wenn Strukturkontrolle, zentrale Pflege und explizite relationale Logik im Vordergrund stehen. Die Datenbankwahl ist deshalb keine Glaubensfrage, sondern eine Architekturentscheidung in Abhaengigkeit vom Problem-Fit.
 
 ### Kernaussage
 
-Die Datenbankwahl ist eine Architekturentscheidung in Abhaengigkeit von Domaene und Zielbild, nicht eine pauschale Glaubensfrage.
+Die Datenbankwahl ist kontextabhaengig und sollte aus der Domaene und den Aenderungsmustern abgeleitet werden.
 
 ### Zeitbudget
 
@@ -316,62 +316,59 @@ Die Datenbankwahl ist eine Architekturentscheidung in Abhaengigkeit von Domaene 
 
 ---
 
-## Optionales Backup-Slide - Wenn noch Zeit oder Fragen kommen
-
-### Folientitel
-
-`Was in der schriftlichen Arbeit noch vertieft wird`
-
-### Inhalt auf der Folie
-
-- quantitative Workloads und Messungen
-- Denormalized Update Cost
-- Join-/Lookup-Spannung bei nicht lokalem Datenzugriff
-- spaeter eventuell Topologie- und Failover-Aspekte
-
-### Gesprochener Text
-
-Wenn ich diesen Vergleich spaeter in der Seminararbeit weiter ausbaue, dann wuerde ich genau die Punkte vertiefen, die in 15 Minuten nicht serioes live gezeigt werden koennen: reproduzierbare quantitative Messungen, die Kosten denormalisierter Updates, die Unterschiede zwischen Dokumentlokalitaet und relationaler Rekonstruktion sowie gegebenenfalls auch Topologie- und Ausfallverhalten.
-
-### Kernaussage
-
-Die Praesentation ist der qualitative Architekturteil, die Seminararbeit liefert spaeter die tieferen Mess- und Methodenebenen.
-
----
-
 ## Empfohlene Live-Demo-Reihenfolge in Kurzform
 
 1. MongoDB auswaehlen.
-2. Produktdetail zeigen.
-3. Query und Code zeigen.
-4. Zwei Filter setzen.
-5. PostgreSQL auswaehlen.
-6. Gleiches fachliches Ergebnis, aber andere Storage Shape zeigen.
-7. Vergleich verbal verdichten.
+2. Produktdetail und Storage Shape zeigen.
+3. Auf PostgreSQL wechseln und dieselbe fachliche Sicht zeigen.
+4. Schema-Evolution mit `regionalTaxCode` erklaeren.
+5. `lazy migration` auf beiden Backends zeigen.
+6. `category rename` auf beiden Backends zeigen.
+7. Eine Aggregation fuer beide Backends zeigen.
+8. Mit dem Problem-Fit-Fazit schliessen.
 
-Diese Reihenfolge ist robust, weil sie wenige Klicks benoetigt und fachlich klar bleibt.
+Diese Reihenfolge entspricht dem aktuellen Aufbau der Demo-App und vermeidet unnoetiges Herumklicken.
 
 ---
 
-## Was du bewusst nicht behaupten solltest
+## CLI-Backup fuer die Praesentation
+
+Falls das Frontend im Praesentationsmoment nicht stabil verfuegbar ist, kann dieselbe Story ueber die CLI abgesichert werden:
+
+```powershell
+npm run demo:health:mongo
+npm run demo:health:postgres
+npm run demo:read:mongo
+npm run demo:read:postgres
+npm run demo:rename:mongo
+npm run demo:rename:postgres
+npm run demo:migrate:mongo
+npm run demo:migrate:postgres
+```
+
+Damit bleibt die Demo auch ohne Browser inhaltlich vorfuehrbar.
+
+---
+
+## Was du bewusst nicht sagen solltest
 
 - Nicht sagen: MongoDB ist generell performanter.
 - Nicht sagen: PostgreSQL ist fuer moderne Anwendungen schlechter geeignet.
-- Nicht sagen: Das Demo beweist bereits alle wissenschaftlichen Aussagen.
-- Nicht sagen: Schema-Flexibilitaet ist automatisch ein Vorteil ohne Kosten.
+- Nicht sagen: Diese Demo beweist CAP oder Ausfalltoleranz.
+- Nicht sagen: Flexibilitaet ist automatisch besser als Explizitheit.
 
 Stattdessen besser:
 
-- In diesem Produktkatalog wirkt MongoDB bei Dokumentnaehe sehr natuerlich.
+- In diesem Produktkatalog wirkt MongoDB bei dokumentnahen Aggregaten sehr natuerlich.
 - In diesem Produktkatalog wirkt PostgreSQL bei zentraler Strukturkontrolle sehr stark.
-- Die Praesentation zeigt die Architekturunterschiede qualitativ und fair.
+- Die Demo zeigt qualitative Modellierungsfolgen im selben Anwendungsszenario.
 
 ---
 
 ## Letzte Praesentationstipps
 
-1. Starte nicht mit der Anwendung, sondern mit der Leitfrage.
-2. Nutze die Live-Demo nur fuer klar vorbereitete Klickpfade.
-3. Wechsle nach MongoDB relativ schnell zu PostgreSQL, damit der Vergleich sichtbar fair bleibt.
-4. Verbringe mehr Zeit mit Interpretation als mit Navigation in der UI.
-5. Schliesse mit einem kritischen Problem-Fit-Fazit statt mit einer Siegerfolie.
+1. Starte mit der Leitfrage, nicht mit der UI.
+2. Zeige immer zuerst die gleiche fachliche Sicht und dann die interne Differenz.
+3. Halte MongoDB und PostgreSQL im Vortrag symmetrisch.
+4. Nutze die Szenarien `lazy migration`, `category rename` und `analytics` als rote Fadenpunkte.
+5. Verbringe mehr Zeit mit Interpretation als mit Navigation.

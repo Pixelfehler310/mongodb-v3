@@ -87,17 +87,17 @@ function App() {
   const backend = useMemo(() => backends.find((item) => item.id === backendId) || backends[0], [backendId]);
 
   const loadHealth = useCallback(async () => {
-    const payload = await fetchJson(`${backend.apiBase}/api/health`);
+    const payload = await fetchJson(`${backend.apiBase}/health`);
     setHealth(payload);
   }, [backend.apiBase]);
 
   const loadFacets = useCallback(async () => {
-    const payload = await fetchJson(`${backend.apiBase}/api/facets`);
+    const payload = await fetchJson(`${backend.apiBase}/facets`);
     setFacets(payload);
   }, [backend.apiBase]);
 
   const loadProducts = useCallback(async () => {
-    const payload = await fetchJson(`${backend.apiBase}/api/products?${queryParams(filters)}`);
+    const payload = await fetchJson(`${backend.apiBase}/products?${queryParams(filters)}`);
     setProductsPayload(payload);
     if (!selectedId || !payload.items.some((item) => item._id === selectedId)) {
       setSelectedId(payload.items[0]?._id || null);
@@ -105,7 +105,7 @@ function App() {
   }, [backend.apiBase, filters, selectedId]);
 
   const loadAggregation = useCallback(async () => {
-    const payload = await fetchJson(`${backend.apiBase}/api/aggregation?kind=${aggregationKind}`);
+    const payload = await fetchJson(`${backend.apiBase}/aggregation?kind=${aggregationKind}`);
     setAggregation(payload);
   }, [backend.apiBase, aggregationKind]);
 
@@ -132,7 +132,7 @@ function App() {
       setSelectedDetail(null);
       return;
     }
-    fetchJson(`${backend.apiBase}/api/products/${selectedId}`)
+    fetchJson(`${backend.apiBase}/products/${selectedId}`)
       .then(setSelectedDetail)
       .catch((error) => setStatus(error.message));
   }, [backend.apiBase, selectedId]);
@@ -145,7 +145,7 @@ function App() {
     try {
       const endpoint = scenarioId === "lazy-migration" ? "lazy-migration" : "category-rename";
       const payload = scenarioId === "lazy-migration" ? { productType: "laptop", taxCode: "DE-STD" } : { categorySlug: "work-essentials", newName: "Work Essentials Live" };
-      const result = await fetchJson(`${backend.apiBase}/api/demo/scenarios/${endpoint}`, {
+      const result = await fetchJson(`${backend.apiBase}/demo/scenarios/${endpoint}`, {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -162,7 +162,7 @@ function App() {
   const insertSample = async () => {
     try {
       const productType = filters.productType || "laptop";
-      const payload = await fetchJson(`${backend.apiBase}/api/products/sample`, {
+      const payload = await fetchJson(`${backend.apiBase}/products/sample`, {
         method: "POST",
         body: JSON.stringify({ productType }),
       });

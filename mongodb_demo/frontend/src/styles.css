@@ -207,10 +207,15 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.story-panel,
 .catalog-panel,
 .insight-panel {
   overflow: hidden;
+}
+
+.story-panel {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .story-panel,
