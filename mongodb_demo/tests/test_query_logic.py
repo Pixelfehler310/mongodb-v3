@@ -25,8 +25,8 @@ def test_combined_product_query_contains_simple_nested_and_evolution_filters():
     assert "$or" in product_query.query
 
 
-def test_aggregation_pipeline_for_categories_unwinds_category_array():
-    pipeline = build_aggregation_pipeline("countByCategory")
+def test_aggregation_pipeline_for_manufacturer_ratings_unwinds_review_array():
+    pipeline = build_aggregation_pipeline("avgRatingByManufacturer")
 
-    assert pipeline[0] == {"$unwind": "$categories"}
-    assert pipeline[1]["$group"]["_id"] == "$categories.name"
+    assert pipeline[0] == {"$unwind": "$latestReviews"}
+    assert pipeline[1]["$group"]["_id"] == "$manufacturer.name"

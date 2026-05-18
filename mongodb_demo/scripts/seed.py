@@ -7,7 +7,8 @@ WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-from mongodb_demo.backend.database import MongoDatabase
+from mongodb_demo.backend.database import MongoDatabase, PostgresDatabase
+from mongodb_demo.backend.postgres_schema import recreate_postgres_schema, seed_postgres_products
 from mongodb_demo.backend.sample_data import generate_products
 from mongodb_demo.backend.settings import Settings
 
@@ -18,13 +19,21 @@ def create_indexes(collection) -> None:
     collection.create_index("categories.slug")
     collection.create_index("updatedAt")
     collection.create_index("attributes.ramGb")
-    collection.create_index("shipping.availableRegions")
+    collection.create_index("regionalTaxCode")
 
 
 def main() -> None:
     settings = Settings.from_env()
+    products = generate_products(count=24)
+    if settings.db_engine == "postgres":
+        database = PostgresDatabase(settings)
+        recreate_postgres_schema(database.connection)
+        seed_postgres_products(database.connection, products)
+        print(f"Seeded {len(products)} products into PostgreSQL relational demo schema")
+        database.close()
+        return
+
     database = MongoDatabase(settings)
-    products = generate_products(count=300)
     database.collection.drop()
     database.collection.insert_many(products)
     create_indexes(database.collection)

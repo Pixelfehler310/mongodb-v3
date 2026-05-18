@@ -1,101 +1,99 @@
-# MongoDB Product Catalog Demo
+# MongoDB vs PostgreSQL Demo
 
-Small Flask/PyMongo demo for a seminar presentation about MongoDB document modeling. The app shows a polymorphic product catalog with filters, full JSON documents, matching MongoDB query text, matching PyMongo code, simple aggregations, and a small schema-evolution example.
+Presentation-first demo for a 15-minute seminar talk. The application compares MongoDB and PostgreSQL on the same product-catalog domain, through the same API contract and the same frontend workflow.
 
-This project is only the qualitative demo. The metric and quantification project stays separate.
+The demo is intentionally small: it uses a curated catalog with laptops, t-shirts, and books, then shows where the two data models feel different in reads, storage shape, schema evolution, category updates, and aggregations.
 
-## Quick Start
+## What This Demo Shows
+
+- Same domain, same endpoints, two persistence models.
+- MongoDB as embedded product documents with local product context.
+- PostgreSQL as normalized relational tables with explicit structure.
+- Schema evolution through older products without `regionalTaxCode` and newer products with it.
+- Update contrast through a category rename scenario.
+- Analytics contrast through average price and average rating aggregations.
+
+This demo does not try to prove CAP behavior, sharding, replica-set failover, or absolute performance. Those topics belong in the written work or an appendix, not in the short live presentation.
+
+## Run With Docker
 
 ```powershell
-cd mongodb_demo
 docker compose up --build
 ```
 
-Open `http://localhost:3000`.
+Open the frontend at:
 
-This starts four containers:
+```text
+http://localhost:5173
+```
 
-- `mongodb-demo` for MongoDB, exposed on host port `27117`.
-- `mongodb-demo-seed` for deterministic seed data.
-- `mongodb-demo-backend` for the Flask API, exposed on host port `5000`.
-- `mongodb-demo-frontend` for the React frontend, exposed on host port `3000`.
+Backend endpoints:
 
-## Local Development Start
+```text
+MongoDB API:     http://localhost:5000/api
+PostgreSQL API: http://localhost:5001/api
+```
 
-Use this path when you want the Flask API and React app running directly on the host:
+## Local Development
+
+Install Python dependencies:
 
 ```powershell
-cd mongodb_demo
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-docker compose up -d mongodb
-Copy-Item .env.example .env
-python scripts/seed.py
-python -m backend.app
 ```
 
-In a second terminal:
+Install frontend dependencies:
 
 ```powershell
-cd mongodb_demo
 npm --prefix frontend install
+```
+
+Run the React frontend:
+
+```powershell
 npm --prefix frontend run dev
 ```
 
-The host-side MongoDB URI is `mongodb://localhost:27117/`, the Flask API runs on `http://localhost:5000`, and the React app runs on `http://localhost:3000`.
-
-## What It Shows
-
-- One `products` collection with laptops, t-shirts, books, smartphones, and desks.
-- Shared product fields plus type-specific `attributes`.
-- Embedded arrays such as `categories`, `variants`, `highlights`, and `latestReviews`.
-- Filters over simple fields, nested fields, arrays, price range, and schema evolution.
-- Query and PyMongo snippets that update with the UI state.
-- Aggregations for average price, product counts, and average ratings.
-- A sample insert button that creates a new schema-version-2 product with `regionalTaxCode`.
-
-## Local Commands
+Run a backend manually, for example MongoDB:
 
 ```powershell
-docker compose up --build
-docker compose down
-docker compose up -d mongodb
-python scripts/seed.py
-python -m backend.app
-npm --prefix frontend run dev
-npm --prefix frontend run build
+set DB_ENGINE=mongo&& set PORT=5000&& python -m backend.app
+```
+
+Run PostgreSQL manually:
+
+```powershell
+set DB_ENGINE=postgres&& set PORT=5001&& python -m backend.app
+```
+
+## Presentation CLI
+
+The CLI calls the same HTTP API as the frontend. Start the Docker stack first, then run:
+
+```powershell
+npm run demo:health:mongo
+npm run demo:health:postgres
+npm run demo:read:mongo
+npm run demo:read:postgres
+npm run demo:rename:mongo
+npm run demo:rename:postgres
+npm run demo:migrate:mongo
+npm run demo:migrate:postgres
+```
+
+The rename and migration commands are state-changing. Use the seed scripts or restart the Docker stack when you want to return to the original data state.
+
+## Tests
+
+```powershell
 python -m pytest
+npm --prefix frontend run build
 ```
 
-Equivalent npm script aliases are available for convenience:
+## Data Model
 
-```powershell
-npm run compose:up
-npm run compose:down
-npm run seed
-npm run reset
-npm run start
-npm test
-```
+MongoDB stores one product as one aggregate document with embedded categories, attributes, variants, highlights, and latest reviews.
 
-## API
+PostgreSQL stores the same product through normalized tables: `products`, `manufacturers`, `categories`, `product_categories`, `product_attributes`, `product_variants`, `product_highlights`, and `product_reviews`.
 
-- `GET /api/health`
-- `GET /api/facets`
-- `GET /api/products`
-- `GET /api/products/<product_id>`
-- `GET /api/aggregation?kind=avgPriceByType`
-- `POST /api/products/sample`
-
-## Configuration
-
-See `.env.example` for the supported variables:
-
-- `PORT`
-- `MONGO_URI`
-- `MONGO_DB`
-- `MONGO_COLLECTION`
-- `DEFAULT_LIMIT`
-- `DEMO_SEED_PROFILE`
-- `ENABLE_EVOLUTION_VIEW`
+Both backends expose the same high-level product JSON to the frontend so the comparison remains about data-model trade-offs, not about different application features.

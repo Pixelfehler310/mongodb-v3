@@ -10,6 +10,8 @@ def test_generated_products_cover_all_product_types_and_schema_versions():
     assert schema_versions == {1, 2}
     assert any("regionalTaxCode" in product for product in products)
     assert any("regionalTaxCode" not in product for product in products)
+    assert all("shipping" not in product for product in products)
+    assert all("tags" not in product for product in products)
 
 
 def test_prepared_sample_exists_for_each_product_family():

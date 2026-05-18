@@ -21,8 +21,6 @@ def build_facets(collection: Any) -> dict[str, Any]:
         "manufacturers": sorted(collection.distinct("manufacturer.name")),
         "categories": [{"slug": item["_id"], "name": item["name"]} for item in categories],
         "statuses": sorted(collection.distinct("status")) or STATUSES,
-        "tags": sorted(collection.distinct("tags")),
-        "shippingRegions": sorted(collection.distinct("shipping.availableRegions")),
         "ramOptions": sorted(value for value in collection.distinct("attributes.ramGb") if isinstance(value, int)),
         "schemaEvolution": [
             {"value": "withTaxCode", "label": "with regionalTaxCode"},

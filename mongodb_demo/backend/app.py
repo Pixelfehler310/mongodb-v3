@@ -4,20 +4,9 @@ from flask import Flask, jsonify, request
 from pymongo.errors import PyMongoError
 from werkzeug.exceptions import HTTPException
 
-from .database import MongoDatabase
-from .facets import build_facets
-from .mongo_format import (
-    format_aggregation_code,
-    format_aggregation_query,
-    format_detail_code,
-    format_detail_query,
-    format_find_code,
-    format_find_query,
-    format_insert_code,
-    format_insert_query,
-)
-from .query_logic import aggregation_label, build_aggregation_pipeline, build_product_query
-from .repository import ProductRepository
+from .database import create_database
+from .query_logic import aggregation_label, build_product_query
+from .repository import create_repository
 from .serialization import serialize
 from .settings import Settings
 
@@ -25,73 +14,54 @@ from .settings import Settings
 def create_app(settings: Settings | None = None) -> Flask:
     settings = settings or Settings.from_env()
     app = Flask(__name__, static_folder=None)
-    database = MongoDatabase(settings)
-    repository = ProductRepository(database.collection)
+    database = create_database(settings)
+    repository = create_repository(database, settings.db_engine)
 
     @app.get("/")
     def index():
-        return jsonify({"name": "MongoDB Product Catalog Demo API", "ok": True})
+        return jsonify({"name": "Product Catalog Demo API", "engine": repository.engine, "ok": True})
 
     @app.get("/api/health")
     def health():
-        database.ping()
+        repository.ping()
         return jsonify(
             {
                 "ok": True,
-                "database": settings.mongo_db,
-                "collection": settings.mongo_collection,
+                "engine": repository.engine,
+                "label": repository.label,
+                "queryLanguage": repository.query_language,
+                "codeLanguage": repository.code_language,
                 "productCount": repository.product_count(),
+                **repository.health_metadata(),
             }
         )
 
     @app.get("/api/facets")
     def facets():
-        return jsonify(serialize(build_facets(database.collection)))
+        return jsonify(serialize(repository.facets()))
 
     @app.get("/api/products")
     def products():
         product_query = build_product_query(request.args, settings.default_limit)
-        items, total = repository.list_products(product_query.query, product_query.sort, product_query.limit)
-        return jsonify(
-            serialize(
-                {
-                    "items": items,
-                    "total": total,
-                    "limit": product_query.limit,
-                    "activeFilters": product_query.filters,
-                    "queryText": format_find_query(product_query.query, product_query.sort, product_query.limit),
-                    "codeText": format_find_code(product_query.query, product_query.sort, product_query.limit),
-                }
-            )
-        )
+        return jsonify(serialize(repository.list_products(product_query)))
 
     @app.get("/api/products/<product_id>")
     def product_detail(product_id: str):
-        item = repository.get_product(product_id)
-        if item is None:
+        response = repository.get_product_response(product_id)
+        if response is None:
             return jsonify({"error": "Product not found", "productId": product_id}), 404
-        return jsonify(
-            serialize(
-                {
-                    "item": item,
-                    "queryText": format_detail_query(product_id),
-                    "codeText": format_detail_code(product_id),
-                }
-            )
-        )
+        return jsonify(serialize(response))
 
     @app.get("/api/aggregation")
     def aggregation():
         kind = request.args.get("kind", "avgPriceByType")
-        pipeline = build_aggregation_pipeline(kind)
+        response = repository.aggregation_response(kind)
         return jsonify(
             serialize(
                 {
                     "kind": kind,
                     "label": aggregation_label(kind),
-                    "results": repository.aggregate(kind),
-                    "queryText": format_aggregation_query(pipeline),
-                    "codeText": format_aggregation_code(pipeline),
+                    **response,
                 }
             )
         )
@@ -100,17 +70,50 @@ def create_app(settings: Settings | None = None) -> Flask:
     def insert_sample():
         payload = request.get_json(silent=True) or {}
         product_type = payload.get("productType") or request.args.get("productType") or "laptop"
-        item = repository.insert_sample_product(product_type)
+        return jsonify(serialize(repository.insert_sample_response(product_type))), 201
+
+    @app.get("/api/demo/scenarios")
+    def demo_scenarios():
         return jsonify(
-            serialize(
-                {
-                    "item": item,
-                    "queryText": format_insert_query(item["_id"]),
-                    "codeText": format_insert_code(item["_id"]),
-                    "message": f"Inserted {item['name']}",
-                }
-            )
-        ), 201
+            {
+                "scenarios": [
+                    {
+                        "id": "document-shape",
+                        "title": "Document vs. Main Entity",
+                        "summary": "Compare a MongoDB product document with the PostgreSQL rows that hydrate the same API object.",
+                    },
+                    {
+                        "id": "category-rename",
+                        "title": "Denormalized Category Rename",
+                        "summary": "Rename one category and compare embedded snapshot updates with a central relational update.",
+                    },
+                    {
+                        "id": "lazy-migration",
+                        "title": "Lazy Schema Evolution",
+                        "summary": "Add regionalTaxCode to only the legacy documents or rows touched by the demo scenario.",
+                    },
+                    {
+                        "id": "analytics",
+                        "title": "Cross-Entity Analytics",
+                        "summary": "Compare grouping from embedded reviews with joins over normalized review rows.",
+                    },
+                ]
+            }
+        )
+
+    @app.post("/api/demo/scenarios/category-rename")
+    def category_rename():
+        payload = request.get_json(silent=True) or {}
+        category_slug = payload.get("categorySlug") or request.args.get("categorySlug") or "work-essentials"
+        new_name = payload.get("newName") or request.args.get("newName") or "Work Essentials Live"
+        return jsonify(serialize(repository.category_rename_response(category_slug, new_name)))
+
+    @app.post("/api/demo/scenarios/lazy-migration")
+    def lazy_migration():
+        payload = request.get_json(silent=True) or {}
+        product_type = payload.get("productType") or request.args.get("productType") or "laptop"
+        tax_code = payload.get("taxCode") or request.args.get("taxCode") or "DE-STD"
+        return jsonify(serialize(repository.lazy_migration_response(product_type, tax_code)))
 
     @app.errorhandler(PyMongoError)
     def mongo_error(error: PyMongoError):

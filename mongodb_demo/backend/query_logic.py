@@ -6,9 +6,7 @@ from typing import Any, Mapping
 
 AGGREGATIONS = {
     "avgPriceByType": "Average price by product type",
-    "countByManufacturer": "Product count by manufacturer",
-    "countByCategory": "Product count by category",
-    "avgRatingByType": "Average rating by product type",
+    "avgRatingByManufacturer": "Average rating by manufacturer",
 }
 
 
@@ -50,7 +48,7 @@ def _int(params: Mapping[str, Any], name: str) -> int | None:
         return None
 
 
-def build_product_query(params: Mapping[str, Any], default_limit: int = 25) -> ProductQuery:
+def build_product_query(params: Mapping[str, Any], default_limit: int = 12) -> ProductQuery:
     query: dict[str, Any] = {}
     filters: dict[str, Any] = {}
 
@@ -59,8 +57,6 @@ def build_product_query(params: Mapping[str, Any], default_limit: int = 25) -> P
         "manufacturer": "manufacturer.name",
         "category": "categories.slug",
         "status": "status",
-        "shippingRegion": "shipping.availableRegions",
-        "tag": "tags",
     }
     for param_name, field_name in exact_fields.items():
         value = _text(params, param_name)
@@ -102,36 +98,22 @@ def build_product_query(params: Mapping[str, Any], default_limit: int = 25) -> P
         filters["search"] = search
 
     limit = _int(params, "limit") or default_limit
-    limit = max(1, min(limit, 100))
-
+    limit = max(1, min(limit, 50))
     return ProductQuery(query=query, sort={"updatedAt": -1}, limit=limit, filters=filters)
 
 
 def build_aggregation_pipeline(kind: str) -> list[dict[str, Any]]:
-    if kind == "countByManufacturer":
-        return [
-            {"$group": {"_id": "$manufacturer.name", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1, "_id": 1}},
-            {"$limit": 12},
-        ]
-    if kind == "countByCategory":
-        return [
-            {"$unwind": "$categories"},
-            {"$group": {"_id": "$categories.name", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1, "_id": 1}},
-            {"$limit": 12},
-        ]
-    if kind == "avgRatingByType":
+    if kind == "avgRatingByManufacturer":
         return [
             {"$unwind": "$latestReviews"},
             {
                 "$group": {
-                    "_id": "$productType",
+                    "_id": "$manufacturer.name",
                     "averageRating": {"$avg": "$latestReviews.rating"},
                     "reviewCount": {"$sum": 1},
                 }
             },
-            {"$sort": {"_id": 1}},
+            {"$sort": {"averageRating": -1, "_id": 1}},
         ]
     return [
         {

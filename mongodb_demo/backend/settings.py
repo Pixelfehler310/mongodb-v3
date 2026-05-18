@@ -9,23 +9,22 @@ from dotenv import load_dotenv
 @dataclass(frozen=True)
 class Settings:
     port: int
+    db_engine: str
     mongo_uri: str
     mongo_db: str
     mongo_collection: str
+    postgres_dsn: str
     default_limit: int
-    seed_profile: str
-    enable_evolution_view: bool
 
     @classmethod
     def from_env(cls) -> "Settings":
         load_dotenv()
         return cls(
             port=int(os.getenv("PORT", "3000")),
+            db_engine=os.getenv("DB_ENGINE", "mongo").strip().lower(),
             mongo_uri=os.getenv("MONGO_URI", "mongodb://localhost:27017/"),
             mongo_db=os.getenv("MONGO_DB", "product_demo"),
             mongo_collection=os.getenv("MONGO_COLLECTION", "products"),
-            default_limit=int(os.getenv("DEFAULT_LIMIT", "25")),
-            seed_profile=os.getenv("DEMO_SEED_PROFILE", "standard"),
-            enable_evolution_view=os.getenv("ENABLE_EVOLUTION_VIEW", "true").lower()
-            in {"1", "true", "yes", "on"},
+            postgres_dsn=os.getenv("POSTGRES_DSN", "postgresql://benchmark:benchmark@localhost:5433/product_demo"),
+            default_limit=int(os.getenv("DEFAULT_LIMIT", "12")),
         )

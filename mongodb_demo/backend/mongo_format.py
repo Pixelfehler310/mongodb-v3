@@ -50,3 +50,45 @@ def format_insert_query(product_id: str) -> str:
 
 def format_insert_code(product_id: str) -> str:
     return f"collection.insert_one(build_sample_product(product_id='{product_id}'))"
+
+
+def format_category_rename_query(category_slug: str, new_name: str) -> str:
+    return (
+        "db.products.updateMany("
+        + _pretty({"categories.slug": category_slug})
+        + ",\n  "
+        + _pretty({"$set": {"categories.$[category].name": new_name}})
+        + ",\n  "
+        + _pretty({"arrayFilters": [{"category.slug": category_slug}]})
+        + "\n)"
+    )
+
+
+def format_category_rename_code(category_slug: str, new_name: str) -> str:
+    return (
+        "result = collection.update_many(\n"
+        + f"    {{'categories.slug': {category_slug!r}}},\n"
+        + f"    {{'$set': {{'categories.$[category].name': {new_name!r}}}}},\n"
+        + f"    array_filters=[{{'category.slug': {category_slug!r}}}],\n"
+        + ")"
+    )
+
+
+def format_lazy_migration_query(product_type: str, tax_code: str) -> str:
+    return (
+        "db.products.updateMany("
+        + _pretty({"productType": product_type, "regionalTaxCode": {"$exists": False}})
+        + ",\n  "
+        + _pretty({"$set": {"schemaVersion": 2, "regionalTaxCode": tax_code}})
+        + "\n)"
+    )
+
+
+def format_lazy_migration_code(product_type: str, tax_code: str) -> str:
+    return (
+        "selector = "
+        + _pretty({"productType": product_type, "regionalTaxCode": {"$exists": False}})
+        + "\nupdate = "
+        + _pretty({"$set": {"schemaVersion": 2, "regionalTaxCode": tax_code}})
+        + "\n\nresult = collection.update_many(selector, update)"
+    )
