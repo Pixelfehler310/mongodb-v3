@@ -6,6 +6,7 @@ from typing import Any
 
 from . import postgres_format
 from .postgres_schema import insert_postgres_product
+from .product_contract import ProductConflictError, normalize_product_payload
 from .query_logic import AGGREGATIONS
 from .sample_data import PRODUCT_TYPES, STATUSES, build_live_sample
 
@@ -98,6 +99,55 @@ class PostgresProductRepository:
             "queryText": postgres_format.format_insert_query(document["_id"]),
             "codeText": postgres_format.format_insert_code(document["_id"]),
             "message": f"Inserted {document['name']} into PostgreSQL",
+        }
+
+    def create_product_response(self, payload: Any) -> dict[str, Any]:
+        document = normalize_product_payload(payload)
+        existing_row = self.connection.execute(
+            "SELECT id FROM products WHERE id = %s OR product_id = %s",
+            [document["_id"], document["productId"]],
+        ).fetchone()
+        if existing_row is not None:
+            raise ProductConflictError(f"Product {document['_id']} already exists.")
+        with self.connection.transaction():
+            insert_postgres_product(self.connection, document)
+        return {
+            "item": self._hydrate_product(document["_id"]),
+            "queryText": postgres_format.format_insert_query(document["_id"]),
+            "codeText": postgres_format.format_insert_code(document["_id"]),
+            "message": f"Created {document['name']} in PostgreSQL",
+        }
+
+    def replace_product_response(self, product_id: str, payload: Any) -> dict[str, Any] | None:
+        existing = self.get_product_response(product_id)
+        if existing is None:
+            return None
+        document = normalize_product_payload(payload, existing=existing["item"])
+        with self.connection.transaction():
+            insert_postgres_product(self.connection, document)
+        detail = self.get_product_response(document["_id"])
+        if detail is None:
+            return None
+        return {
+            **detail,
+            "message": f"Updated {document['name']} in PostgreSQL",
+        }
+
+    def delete_product_response(self, product_id: str) -> dict[str, Any] | None:
+        existing = self.get_product_response(product_id)
+        if existing is None:
+            return None
+        product = existing["item"]
+        with self.connection.transaction():
+            for table_name in ["product_reviews", "product_highlights", "product_variants", "product_attributes", "product_categories"]:
+                self.connection.execute(f"DELETE FROM {table_name} WHERE product_id = %s", [product["_id"]])
+            result = self.connection.execute("DELETE FROM products WHERE id = %s", [product["_id"]])
+        return {
+            "productId": product["_id"],
+            "deletedCount": int(result.rowcount),
+            "message": f"Deleted {product['name']} from PostgreSQL",
+            "queryText": postgres_format.format_sql_query("DELETE FROM products WHERE id = %s", [product["_id"]]),
+            "codeText": "connection.execute('DELETE FROM products WHERE id = %s', [product_id])",
         }
 
     def category_rename_response(self, category_slug: str, new_name: str) -> dict[str, Any]:

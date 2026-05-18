@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from pymongo.errors import DuplicateKeyError
+
 from .facets import build_facets
 from . import mongo_format
+from .product_contract import ProductConflictError, normalize_product_payload
 from .query_logic import build_aggregation_pipeline
 from .sample_data import build_live_sample
 
@@ -22,10 +25,18 @@ class MongoProductRepository:
         return self.database.ping()
 
     def health_metadata(self) -> dict[str, Any]:
+        hello = self.database.client.admin.command("hello")
         return {
             "database": self.database.settings.mongo_db,
             "collection": self.database.settings.mongo_collection,
             "model": "embedded product document",
+            "replicaSet": hello.get("setName"),
+            "primary": hello.get("primary"),
+            "server": hello.get("me"),
+            "isWritablePrimary": bool(hello.get("isWritablePrimary")),
+            "writeConcern": self.database.settings.mongo_write_concern,
+            "readConcern": self.database.settings.mongo_read_concern,
+            "readPreference": self.database.settings.mongo_read_preference,
         }
 
     def facets(self) -> dict[str, Any]:
@@ -72,6 +83,46 @@ class MongoProductRepository:
             "queryText": mongo_format.format_insert_query(document["_id"]),
             "codeText": mongo_format.format_insert_code(document["_id"]),
             "message": f"Inserted {document['name']} into MongoDB",
+        }
+
+    def create_product_response(self, payload: Any) -> dict[str, Any]:
+        document = normalize_product_payload(payload)
+        try:
+            self.collection.insert_one(document)
+        except DuplicateKeyError as error:
+            raise ProductConflictError(f"Product {document['_id']} already exists.") from error
+        return {
+            "item": document,
+            "queryText": mongo_format.format_insert_query(document["_id"]),
+            "codeText": mongo_format.format_insert_code(document["_id"]),
+            "message": f"Created {document['name']} in MongoDB",
+        }
+
+    def replace_product_response(self, product_id: str, payload: Any) -> dict[str, Any] | None:
+        existing = self.collection.find_one({"_id": product_id}) or self.collection.find_one({"productId": product_id})
+        if existing is None:
+            return None
+        document = normalize_product_payload(payload, existing=existing)
+        self.collection.replace_one({"_id": existing["_id"]}, document)
+        detail = self.get_product_response(existing["_id"])
+        if detail is None:
+            return None
+        return {
+            **detail,
+            "message": f"Updated {document['name']} in MongoDB",
+        }
+
+    def delete_product_response(self, product_id: str) -> dict[str, Any] | None:
+        existing = self.collection.find_one({"_id": product_id}) or self.collection.find_one({"productId": product_id})
+        if existing is None:
+            return None
+        result = self.collection.delete_one({"_id": existing["_id"]})
+        return {
+            "productId": existing["_id"],
+            "deletedCount": int(result.deleted_count),
+            "message": f"Deleted {existing['name']} from MongoDB",
+            "queryText": f"db.products.deleteOne({{ _id: {existing['_id']!r} }})",
+            "codeText": f"collection.delete_one({{'_id': {existing['_id']!r}}})",
         }
 
     def category_rename_response(self, category_slug: str, new_name: str) -> dict[str, Any]:

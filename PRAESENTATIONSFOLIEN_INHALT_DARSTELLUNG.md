@@ -288,12 +288,12 @@ Hier eignet sich eine kleine Vergleichstabelle am besten.
 
 Empfohlenes Layout:
 
-| Aspekt | MongoDB | PostgreSQL |
-| --- | --- | --- |
-| Produkt lesen | nahe am Dokument | aus Relationen hydratisiert |
-| Evolution | flexibel und schrittweise | explizit und kontrolliert |
-| Update | breiter verteilt | zentral einfacher |
-| Analytics | Dokumentaggregation | SQL ueber Relationen |
+| Aspekt        | MongoDB                   | PostgreSQL                  |
+| ------------- | ------------------------- | --------------------------- |
+| Produkt lesen | nahe am Dokument          | aus Relationen hydratisiert |
+| Evolution     | flexibel und schrittweise | explizit und kontrolliert   |
+| Update        | breiter verteilt          | zentral einfacher           |
+| Analytics     | Dokumentaggregation       | SQL ueber Relationen        |
 
 Wichtig:
 

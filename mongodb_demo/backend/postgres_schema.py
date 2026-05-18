@@ -65,12 +65,18 @@ def insert_postgres_product(connection: Any, product: dict[str, Any]) -> None:
             status, schema_version, regional_tax_code, source, created_at, updated_at
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (id) DO UPDATE SET
+            product_id = EXCLUDED.product_id,
             sku = EXCLUDED.sku,
+            product_type = EXCLUDED.product_type,
             name = EXCLUDED.name,
             base_price = EXCLUDED.base_price,
+            currency = EXCLUDED.currency,
+            manufacturer_id = EXCLUDED.manufacturer_id,
             status = EXCLUDED.status,
+            schema_version = EXCLUDED.schema_version,
             regional_tax_code = EXCLUDED.regional_tax_code,
             source = EXCLUDED.source,
+            created_at = EXCLUDED.created_at,
             updated_at = EXCLUDED.updated_at
         """,
         [

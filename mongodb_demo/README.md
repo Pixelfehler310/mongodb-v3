@@ -1,19 +1,22 @@
 # MongoDB vs PostgreSQL Demo
 
-Presentation-first demo for a 15-minute seminar talk. The application compares MongoDB and PostgreSQL on the same product-catalog domain, through the same API contract and the same frontend workflow.
+Presentation-first demo for a seminar talk. The application compares MongoDB and PostgreSQL on the same product-catalog domain, through the same API contract and a shared frontend workflow.
 
-The demo is intentionally small: it uses a curated catalog with laptops, t-shirts, and books, then shows where the two data models feel different in reads, storage shape, schema evolution, category updates, and aggregations.
+The current demo has two routes: `/shop` is a CRUD-based product catalog admin surface, and `/showcase` is a database comparison view for storage shape, schema evolution, update behavior, and aggregation.
 
 ## What This Demo Shows
 
 - Same domain, same endpoints, two persistence models.
+- Full product CRUD from the frontend through a form-based shop detail dialog.
 - MongoDB as embedded product documents with local product context.
 - PostgreSQL as normalized relational tables with explicit structure.
 - Schema evolution through older products without `regionalTaxCode` and newer products with it.
 - Update contrast through a category rename scenario.
 - Analytics contrast through average price and average rating aggregations.
+- MongoDB replica-set failover with visible primary metadata.
+- A deliberate CAP/consistency showcase path using weak `w=1` writes.
 
-This demo does not try to prove CAP behavior, sharding, replica-set failover, or absolute performance. Those topics belong in the written work or an appendix, not in the short live presentation.
+The CAP scenario is a controlled demonstration of configuration trade-offs, not a claim that MongoDB is generally inconsistent. With stronger write concern such as `majority`, the durability behavior changes and availability under failure becomes more constrained.
 
 ## Run With Docker
 
@@ -24,14 +27,46 @@ docker compose up --build
 Open the frontend at:
 
 ```text
-http://localhost:5173
+http://localhost:3000/shop
+```
+
+The database showcase is available at:
+
+```text
+http://localhost:3000/showcase
 ```
 
 Backend endpoints:
 
 ```text
-MongoDB API:     http://localhost:5000/api
-PostgreSQL API: http://localhost:5001/api
+MongoDB API:      http://localhost:5000/api
+PostgreSQL API:  http://localhost:5001/api
+MongoDB members: localhost:27117, localhost:27118, localhost:27119
+```
+
+The Docker stack starts MongoDB as a replica set named `rs0` with `mongo1`, `mongo2`, and an arbiter. The Mongo backend uses `MONGO_WRITE_CONCERN=1` by default so the failover and rollback showcase remains demonstrable.
+
+## CAP Showcase Commands
+
+Start the stack and open `/shop`. The health pills show the current MongoDB primary and write concern.
+
+To stop the current primary, first check the primary in the UI or through health:
+
+```powershell
+curl http://localhost:5000/api/health
+```
+
+Then stop the corresponding container, for example:
+
+```powershell
+docker stop mongodb-demo-mongo1
+```
+
+After election, continue creating or editing a product in `/shop`. For the destructive rollback/loss demonstration, use the documented seminar flow: pause the secondary before a `w=1` write, stop the primary, resume the secondary, and verify that the acknowledged write can disappear. Reset with:
+
+```powershell
+docker compose down -v
+docker compose up --build
 ```
 
 ## Local Development
@@ -54,10 +89,12 @@ Run the React frontend:
 npm --prefix frontend run dev
 ```
 
-Run a backend manually, for example MongoDB:
+Open `http://localhost:3000/shop` or `http://localhost:3000/showcase`.
+
+Run a backend manually against a local MongoDB instance, for example:
 
 ```powershell
-set DB_ENGINE=mongo&& set PORT=5000&& python -m backend.app
+set DB_ENGINE=mongo&& set PORT=5000&& set MONGO_URI=mongodb://localhost:27117/?directConnection=true&& python -m backend.app
 ```
 
 Run PostgreSQL manually:
@@ -81,7 +118,7 @@ npm run demo:migrate:mongo
 npm run demo:migrate:postgres
 ```
 
-The rename and migration commands are state-changing. Use the seed scripts or restart the Docker stack when you want to return to the original data state.
+The rename, migration, and CRUD commands are state-changing. Use the seed scripts or restart the Docker stack when you want to return to the original data state.
 
 ## Tests
 

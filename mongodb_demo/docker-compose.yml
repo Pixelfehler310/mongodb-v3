@@ -1,8 +1,9 @@
 services:
-  mongodb:
+  mongo1:
     image: mongo:7
-    container_name: mongodb-demo
+    container_name: mongodb-demo-mongo1
     restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27117:27017"
     healthcheck:
@@ -12,7 +13,77 @@ services:
       timeout: 5s
       retries: 20
     volumes:
-      - mongodb_demo_data:/data/db
+      - mongodb_demo_mongo1_data:/data/db
+
+  mongo2:
+    image: mongo:7
+    container_name: mongodb-demo-mongo2
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27118:27017"
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mongodb_demo_mongo2_data:/data/db
+
+  mongo-arbiter:
+    image: mongo:7
+    container_name: mongodb-demo-mongo-arbiter
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27119:27017"
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mongodb_demo_mongo_arbiter_data:/data/db
+
+  mongo-init:
+    image: mongo:7
+    container_name: mongodb-demo-mongo-init
+    command:
+      - mongosh
+      - mongodb://mongo1:27017/?directConnection=true
+      - --quiet
+      - --eval
+      - |
+        const config = {
+          _id: "rs0",
+          members: [
+            { _id: 0, host: "mongo1:27017", priority: 2 },
+            { _id: 1, host: "mongo2:27017", priority: 1 },
+            { _id: 2, host: "mongo-arbiter:27017", arbiterOnly: true }
+          ]
+        };
+        try {
+          rs.status();
+        } catch (error) {
+          rs.initiate(config);
+        }
+        for (let attempt = 0; attempt < 60; attempt += 1) {
+          const status = rs.status();
+          if (status.ok && status.members.some((member) => member.stateStr === "PRIMARY")) {
+            quit(0);
+          }
+          sleep(1000);
+        }
+        quit(1);
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      mongo2:
+        condition: service_healthy
+      mongo-arbiter:
+        condition: service_healthy
 
   postgres:
     image: postgres:16-alpine
@@ -37,13 +108,13 @@ services:
     container_name: mongodb-demo-seed-mongo
     environment:
       DB_ENGINE: mongo
-      MONGO_URI: mongodb://mongodb:27017/
+      MONGO_URI: mongodb://mongo1:27017,mongo2:27017/?replicaSet=rs0
       MONGO_DB: product_demo
       MONGO_COLLECTION: products
     command: ["python", "scripts/seed.py"]
     depends_on:
-      mongodb:
-        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
 
   seed-postgres:
     build: .
@@ -63,9 +134,12 @@ services:
     environment:
       DB_ENGINE: mongo
       PORT: 5000
-      MONGO_URI: mongodb://mongodb:27017/
+      MONGO_URI: mongodb://mongo1:27017,mongo2:27017/?replicaSet=rs0
       MONGO_DB: product_demo
       MONGO_COLLECTION: products
+      MONGO_WRITE_CONCERN: "1"
+      MONGO_READ_CONCERN: local
+      MONGO_READ_PREFERENCE: primary
       DEFAULT_LIMIT: 12
     ports:
       - "5000:5000"
@@ -104,5 +178,7 @@ services:
         condition: service_started
 
 volumes:
-  mongodb_demo_data:
+  mongodb_demo_mongo1_data:
+  mongodb_demo_mongo2_data:
+  mongodb_demo_mongo_arbiter_data:
   postgres_demo_data:

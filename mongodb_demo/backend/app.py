@@ -5,6 +5,7 @@ from pymongo.errors import PyMongoError
 from werkzeug.exceptions import HTTPException
 
 from .database import create_database
+from .product_contract import ProductConflictError, ProductValidationError
 from .query_logic import aggregation_label, build_product_query
 from .repository import create_repository
 from .serialization import serialize
@@ -72,6 +73,27 @@ def create_app(settings: Settings | None = None) -> Flask:
         product_type = payload.get("productType") or request.args.get("productType") or "laptop"
         return jsonify(serialize(repository.insert_sample_response(product_type))), 201
 
+    @app.post("/api/products")
+    def create_product():
+        payload = request.get_json(silent=True)
+        response = repository.create_product_response(payload)
+        return jsonify(serialize(response)), 201
+
+    @app.put("/api/products/<product_id>")
+    def replace_product(product_id: str):
+        payload = request.get_json(silent=True)
+        response = repository.replace_product_response(product_id, payload)
+        if response is None:
+            return jsonify({"error": "Product not found", "productId": product_id}), 404
+        return jsonify(serialize(response))
+
+    @app.delete("/api/products/<product_id>")
+    def delete_product(product_id: str):
+        response = repository.delete_product_response(product_id)
+        if response is None:
+            return jsonify({"error": "Product not found", "productId": product_id}), 404
+        return jsonify(serialize(response))
+
     @app.get("/api/demo/scenarios")
     def demo_scenarios():
         return jsonify(
@@ -118,6 +140,14 @@ def create_app(settings: Settings | None = None) -> Flask:
     @app.errorhandler(PyMongoError)
     def mongo_error(error: PyMongoError):
         return jsonify({"error": "MongoDB request failed", "detail": str(error)}), 503
+
+    @app.errorhandler(ProductValidationError)
+    def validation_error(error: ProductValidationError):
+        return jsonify({"error": "Invalid product payload", "details": error.errors}), 400
+
+    @app.errorhandler(ProductConflictError)
+    def conflict_error(error: ProductConflictError):
+        return jsonify({"error": "Product conflict", "detail": str(error)}), 409
 
     @app.errorhandler(Exception)
     def unexpected_error(error: Exception):
