@@ -342,7 +342,6 @@ function ShowcasePage({ backend }) {
   const [activeTab, setActiveTab] = useState("shape");
   const [aggregationKind, setAggregationKind] = useState("avgRatingByManufacturer");
   const [aggregation, setAggregation] = useState(null);
-  const [scenarioResult, setScenarioResult] = useState(null);
   const [status, setStatus] = useState("Loading showcase.");
 
   const loadHealth = useCallback(async () => {
@@ -375,7 +374,6 @@ function ShowcasePage({ backend }) {
   useEffect(() => {
     setSelectedId(null);
     setSelectedDetail(null);
-    setScenarioResult(null);
     setStatus(`Loading ${backend.label} showcase.`);
     Promise.all([loadHealth(), loadFacets()])
       .then(() => setStatus(`${backend.label} showcase ready.`))
@@ -408,7 +406,6 @@ function ShowcasePage({ backend }) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      setScenarioResult(result);
       setActiveTab("code");
       await refreshShowcase();
       setStatus(`${result.scenario} completed on ${backend.label}.`);
@@ -471,8 +468,7 @@ function ShowcasePage({ backend }) {
       </section>
 
       <section className="scenario-panel showcase-tools">
-        <ScenarioTools onRun={runScenario} status={status} />
-        <ScenarioResult result={scenarioResult} />
+        <ScenarioTools backend={backend} onRun={runScenario} status={status} />
         <AggregationPanel facets={facets} aggregationKind={aggregationKind} setAggregationKind={setAggregationKind} aggregation={aggregation} />
       </section>
     </main>
@@ -914,7 +910,7 @@ function StorageShape({ backend, product, summary }) {
   );
 }
 
-function ScenarioTools({ onRun, status }) {
+function ScenarioTools({ backend, onRun, status }) {
   return (
     <div className="scenario-result">
       <h2>Database Tools</h2>
@@ -930,33 +926,6 @@ function ScenarioTools({ onRun, status }) {
       <p className="status-message compact" role="status">
         {status}
       </p>
-    </div>
-  );
-}
-
-function ScenarioResult({ result }) {
-  if (!result) {
-    return (
-      <div className="scenario-result empty">
-        <h2>Scenario Result</h2>
-        <p>Run a database tool to show counts, trade-offs, query, and code.</p>
-      </div>
-    );
-  }
-  const metrics = Object.entries(result).filter(([key, value]) => typeof value === "number" && !key.toLowerCase().includes("version"));
-  return (
-    <div className="scenario-result">
-      <h2>{result.scenario}</h2>
-      <p>{result.headline || result.message}</p>
-      <div className="metric-row">
-        {metrics.map(([key, value]) => (
-          <div key={key} className="metric-card">
-            <span>{key}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </div>
-      <pre className="code-block small">{result.queryText || result.codeText || "No query for this scenario."}</pre>
     </div>
   );
 }

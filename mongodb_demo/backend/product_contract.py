@@ -44,10 +44,8 @@ def normalize_product_payload(payload: Any, *, existing: dict[str, Any] | None =
     product["basePrice"] = _required_number(product, "basePrice", errors)
     product["schemaVersion"] = _required_int(product, "schemaVersion", errors, default=2)
 
-    if "regionalTaxCode" in product and product["regionalTaxCode"] is not None:
-        product["regionalTaxCode"] = _clean_text(product["regionalTaxCode"])
-    elif "regionalTaxCode" in product:
-        product.pop("regionalTaxCode")
+    # Lazy Migration: Ensure regionalTaxCode exists with a default value
+    product["regionalTaxCode"] = _clean_text(product.get("regionalTaxCode")) or "DE-STD"
 
     if "source" in product and product["source"] is not None:
         product["source"] = _clean_text(product["source"])

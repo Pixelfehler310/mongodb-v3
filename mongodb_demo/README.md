@@ -50,6 +50,14 @@ The Docker stack starts MongoDB as a replica set named `rs0` with `mongo1`, `mon
 
 Start the stack and open `/shop`. The health pills show the current MongoDB primary and write concern.
 
+For the automated rollback/loss lab, run:
+
+```powershell
+npm run demo:cap:mongo
+```
+
+The script pauses the secondary, performs one weak `w=1` write, stops the current primary, resumes the secondary, waits for election, and verifies whether the acknowledged write survived.
+
 To stop the current primary, first check the primary in the UI or through health:
 
 ```powershell
@@ -62,7 +70,7 @@ Then stop the corresponding container, for example:
 docker stop mongodb-demo-mongo1
 ```
 
-After election, continue creating or editing a product in `/shop`. For the destructive rollback/loss demonstration, use the documented seminar flow: pause the secondary before a `w=1` write, stop the primary, resume the secondary, and verify that the acknowledged write can disappear. Reset with:
+After election, continue creating or editing a product in `/shop` or use the consistency lab in `/showcase`. For the destructive rollback/loss demonstration, the seminar flow is the same sequence the CLI automates: pause the secondary before a `w=1` write, stop the primary, resume the secondary, and verify that the acknowledged write can disappear. Reset with:
 
 ```powershell
 docker compose down -v
