@@ -139,6 +139,11 @@ h3 {
   gap: 10px;
 }
 
+.backend-selector {
+  display: grid;
+  gap: 8px;
+}
+
 .topbar-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -161,6 +166,21 @@ h3 {
   background: var(--surface);
   border-color: var(--line);
   box-shadow: 0 4px 14px rgba(22, 32, 42, 0.08);
+}
+
+.segmented-subtle {
+  padding: 2px;
+  border-style: dashed;
+  background: transparent;
+}
+
+.mongo-source-selector {
+  justify-content: flex-end;
+}
+
+.mongo-source-selector button {
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .primary-button {

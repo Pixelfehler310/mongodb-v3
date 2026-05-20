@@ -2,9 +2,39 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
+const backendFamilies = [
+  { id: "mongo", label: "MongoDB" },
+  { id: "postgres", label: "PostgreSQL" },
+];
+
 const backends = [
-  { id: "mongo", label: "MongoDB", apiBase: "/api/mongo", model: "embedded document", accent: "document-local" },
-  { id: "postgres", label: "PostgreSQL", apiBase: "/api/postgres", model: "normalized tables", accent: "relational" },
+  {
+    id: "mongo-local",
+    family: "mongo",
+    label: "MongoDB",
+    sourceLabel: "Local Replica Set",
+    apiBase: "/api/mongo",
+    model: "embedded document",
+    accent: "document-local",
+  },
+  {
+    id: "mongo-atlas",
+    family: "mongo",
+    label: "MongoDB",
+    sourceLabel: "Atlas Cluster",
+    apiBase: "/api/mongo-atlas",
+    model: "embedded document",
+    accent: "document-local",
+  },
+  {
+    id: "postgres",
+    family: "postgres",
+    label: "PostgreSQL",
+    sourceLabel: "Local Database",
+    apiBase: "/api/postgres",
+    model: "normalized tables",
+    accent: "relational",
+  },
 ];
 
 const emptyFilters = {
@@ -152,7 +182,7 @@ function useRoute() {
 
 function App() {
   const { route, navigate } = useRoute();
-  const [backendId, setBackendId] = useState("mongo");
+  const [backendId, setBackendId] = useState("mongo-local");
   const backend = useMemo(() => backends.find((item) => item.id === backendId) || backends[0], [backendId]);
 
   return (
@@ -174,19 +204,45 @@ function App() {
           <BackendSelector backendId={backendId} onChange={setBackendId} />
         </div>
       </header>
-      {route === "/showcase" ? <ShowcasePage backend={backend} /> : <ShopPage backend={backend} />}
+      {route === "/showcase" ? <ShowcasePage key={backend.id} backend={backend} /> : <ShopPage key={backend.id} backend={backend} />}
     </>
   );
 }
 
 function BackendSelector({ backendId, onChange }) {
+  const activeBackend = backends.find((backend) => backend.id === backendId) || backends[0];
+  const activeFamily = activeBackend.family;
+  const mongoOptions = backends.filter((backend) => backend.family === "mongo");
+
+  const handleFamilyChange = (familyId) => {
+    if (familyId === "mongo") {
+      onChange(activeFamily === "mongo" ? activeBackend.id : mongoOptions[0].id);
+      return;
+    }
+    const nextBackend = backends.find((backend) => backend.family === familyId);
+    if (nextBackend) {
+      onChange(nextBackend.id);
+    }
+  };
+
   return (
-    <div className="segmented" aria-label="Data backend">
-      {backends.map((backend) => (
-        <button key={backend.id} type="button" className={backendId === backend.id ? "active" : ""} onClick={() => onChange(backend.id)}>
-          {backend.label}
-        </button>
-      ))}
+    <div className="backend-selector">
+      <div className="segmented" aria-label="Data backend">
+        {backendFamilies.map((family) => (
+          <button key={family.id} type="button" className={activeFamily === family.id ? "active" : ""} onClick={() => handleFamilyChange(family.id)}>
+            {family.label}
+          </button>
+        ))}
+      </div>
+      {activeFamily === "mongo" ? (
+        <div className="segmented segmented-subtle mongo-source-selector" aria-label="MongoDB source">
+          {mongoOptions.map((backend) => (
+            <button key={backend.id} type="button" className={backendId === backend.id ? "active" : ""} onClick={() => onChange(backend.id)}>
+              {backend.sourceLabel}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -291,10 +347,13 @@ function ShopPage({ backend }) {
         <div>
           <p className="eyebrow">CRUD Workspace</p>
           <h2>{backend.label} Product Catalog</h2>
-          <p>{backend.model}; same product contract across both backends.</p>
+          <p>
+            {backend.sourceLabel}; {backend.model}; same product contract across both backends.
+          </p>
         </div>
         <div className="toolbar-metrics">
           <span className={`status-pill ${health?.ok ? "ok" : "error"}`}>{health?.label || backend.label}</span>
+          <span className="status-pill">{backend.sourceLabel}</span>
           {health?.primary ? <span className="status-pill">Primary {health.primary}</span> : null}
           {health?.writeConcern ? <span className="status-pill">w={health.writeConcern}</span> : null}
           <span className="status-pill">{health?.productCount ?? productsPayload?.total ?? 0} products</span>
@@ -425,11 +484,12 @@ function ShowcasePage({ backend }) {
           <div>
             <h2>Dataset</h2>
             <p>
-              {backend.label}: {backend.model}
+              {backend.label}: {backend.sourceLabel}, {backend.model}
             </p>
           </div>
           <div className="toolbar-metrics">
             <span className={`status-pill ${health?.ok ? "ok" : "error"}`}>{health?.label || backend.label}</span>
+            <span className="status-pill">{backend.sourceLabel}</span>
             {health?.primary ? <span className="status-pill">Primary {health.primary}</span> : null}
             {health?.writeConcern ? <span className="status-pill">w={health.writeConcern}</span> : null}
           </div>
@@ -881,7 +941,7 @@ function StorageShape({ backend, product, summary }) {
   const commonFields = ["id", "product", "manufacturer", "categories", "attributes", "variants", "reviews"];
   const postgresTables = ["products", "manufacturers", "product_categories", "categories", "product_attributes", "product_variants", "product_reviews"];
   const cards =
-    backend.id === "mongo"
+    backend.family === "mongo"
       ? [
           { title: "root document", fields: ["_id", "productType", "basePrice", "schemaVersion"] },
           { title: "embedded arrays", fields: ["categories[]", "variants[]", "latestReviews[]", "highlights[]"] },

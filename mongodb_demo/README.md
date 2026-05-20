@@ -24,6 +24,8 @@ The CAP scenario is a controlled demonstration of configuration trade-offs, not 
 docker compose up --build
 ```
 
+The default stack now starts three API backends: local MongoDB replica set, MongoDB Atlas, and PostgreSQL. The Atlas backend expects the `MONGO_ATLAS_*` variables in `.env` to be set.
+
 Open the frontend at:
 
 ```text
@@ -40,11 +42,24 @@ Backend endpoints:
 
 ```text
 MongoDB API:      http://localhost:5000/api
+MongoDB Atlas API:http://localhost:5002/api
 PostgreSQL API:  http://localhost:5001/api
 MongoDB members: localhost:27117, localhost:27118, localhost:27119
 ```
 
 The Docker stack starts MongoDB as a replica set named `rs0` with `mongo1`, `mongo2`, and an arbiter. The Mongo backend uses `MONGO_WRITE_CONCERN=1` by default so the failover and rollback showcase remains demonstrable.
+
+## Atlas Seed And Collection Creation
+
+The Atlas collection does not need to be created manually. The seed script creates the target collection automatically on first write and replaces its contents with the demo dataset.
+
+Seed Atlas once explicitly with:
+
+```powershell
+docker compose --profile atlas-seed run --rm seed-mongo-atlas
+```
+
+This command writes the demo products into `MONGO_ATLAS_DB`.`MONGO_ATLAS_COLLECTION`, creates the collection if it does not exist yet, and recreates the demo indexes.
 
 ## CAP Showcase Commands
 
