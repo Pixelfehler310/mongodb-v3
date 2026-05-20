@@ -137,8 +137,15 @@ services:
       MONGO_URI: mongodb://mongo1:27017,mongo2:27017/?replicaSet=rs0
       MONGO_DB: product_demo
       MONGO_COLLECTION: products
+      # Write concern = how many replica set members must acknowledge a write.
+      # Typical values: "0" (no ack), "1" (primary ack), "majority" (majority ack), or a higher number like "2".
       MONGO_WRITE_CONCERN: "1"
+      # Read concern = which durability/consistency level reads require.
+      # Typical values: local (default, fastest), majority (only majority-committed data),
+      # available (may be stale but highly available), linearizable (strongest single-document primary read), snapshot (mainly for transactions).
       MONGO_READ_CONCERN: local
+      # Read preference = which node should serve reads.
+      # Typical values: primary, primaryPreferred, secondary, secondaryPreferred, nearest.
       MONGO_READ_PREFERENCE: primary
       DEFAULT_LIMIT: 12
     ports:
