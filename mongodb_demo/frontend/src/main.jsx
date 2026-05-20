@@ -916,9 +916,11 @@ function ScenarioTools({ backend, onRun, status }) {
       <h2>Database Tools</h2>
       <p>Run targeted modeling scenarios without story-step navigation.</p>
       <div className="row-actions stacked">
+        {/*
         <button type="button" onClick={() => onRun("lazy-migration")}>
           Run Lazy Migration
         </button>
+        */}
         <button type="button" onClick={() => onRun("category-rename")}>
           Rename Category
         </button>
